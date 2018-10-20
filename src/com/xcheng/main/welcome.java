@@ -26,20 +26,43 @@ public class welcome {
 				System.out.println("请输入您想要入住的房间号码然后回车");
 				String sInNUm = sc.next();
 				if (!isInteger(sInNUm)) {
+					System.out.println("输入内容有误");
 					continue;
 				}
 				int checkNum = Integer.valueOf(sInNUm);
 				int status = checkStatus(checkNum, rooms);
+				// 如果状态为已有客户
 				if (status == STATUS_HAS_GUEST) {
 					alreadyHasGuest(rooms);
 				} else if (status == STATUS_EMPTY) {
 					// 房间空 可以入住
 					// TODO
+					System.out.println("可以入住,请输入您的姓名办理入住");
+					String guestName = sc.next();
+					checkIn(guestName, checkNum, rooms);
 				}
 
 			} else if ("out".equals(str)) {
 				// 用户想要退房
-				System.out.println("用户想要退房");
+				// 当用户需要退房的时候，输入out，提示用户输入入住的房间号，如果输入的房间号状态为“空”表示该房间没有住人，提示重新输入，输入对的时候就提示用户退房成功，并改变房间的状态
+				System.out.println("请输入想要退房的房间号");
+				int checkOutNum = sc.nextInt();
+				int status = checkStatus(checkOutNum, rooms);
+				boolean flag_checkOut = true;
+				while (flag_checkOut) {
+					if (status == STATUS_EMPTY) {
+						System.out.println("房号错误,请重新输入");
+						checkOutNum = sc.nextInt();
+						status = checkStatus(checkOutNum, rooms);
+					} else if (status == STATUS_HAS_GUEST) {
+						String status_OK = "true";
+						if (setRoom(checkOutNum, rooms, status_OK)) {
+							System.out.println("退房成功");
+							flag_checkOut = false;
+						}
+					}
+				}
+
 			} else if ("quit".equals(str)) {
 				// 用户想要退出
 				System.out.println("用户想要退出");
@@ -47,6 +70,25 @@ public class welcome {
 			}
 
 		}
+	}
+
+	private static boolean setRoom(int checkOutNum, Room[] rooms, String status_OK) {
+		// TODO 退房 改变房间的状态
+
+		int num = getIndex(checkOutNum, rooms);
+		rooms[num].setStatus(status_OK);
+		if (checkStatus(checkOutNum, rooms) == STATUS_EMPTY) {
+			return true;
+		}
+		return false;
+	}
+
+	private static void checkIn(String guestName, int checkNum, Room[] rooms) {
+		// TODO 参数 :String 用户姓名 int 房间号
+		// 同时把房间的状态改为用户的姓名，打印出用户入住该房间成功
+		int num = getIndex(checkNum, rooms);
+		rooms[num].setStatus(guestName);
+		System.out.println(guestName + "恭喜入住" + checkNum + "号房间成功");
 	}
 
 	/*
@@ -80,6 +122,16 @@ public class welcome {
 			}
 		}
 		return 0;
+	}
+
+	private static int getIndex(int num, Room[] rms) {
+		for (int i = 0; i < rms.length; i++) {
+			if (num == rms[i].getId()) {
+				return i;
+			}
+		}
+		return 0;
+
 	}
 
 	private static void showRooms(Room[] rooms) {
